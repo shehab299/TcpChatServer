@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "run" : "node Server.js"
+  },
+  "keywords": [],
+  "author": "Shehab Khaled",
+  "license": "ISC",
+  "description": "TCP Chat Server"
+}
