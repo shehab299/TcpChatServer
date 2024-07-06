@@ -32,6 +32,8 @@ function message(data, client, server){
 
     const message = data.message;
     const username = server.getUserName(client);
+    
+    console.log(username);
 
     if(!username){
         client.write("Unauthorized");

@@ -1,5 +1,6 @@
 const net = require("net");
 const Router = require("./Router");
+const { Socket } = require("dgram");
 
 
 
@@ -10,8 +11,8 @@ class Server{
     {
         this.router = new Router(this);
         this.server = net.createServer(this.handler.bind(this));
-        this.sockets = {};
-        this.usernames = {};
+        this.sockets = new Map();
+        this.usernames = new Map();
     }
 
 
@@ -23,11 +24,11 @@ class Server{
 
         function closeHandler()
         {
-            if(!this.usernames[socket])
+            if(!this.usernames.get(socket))
             {
-                const username = this.usernames[socket];
-                this.usernames[socket] = undefined;
-                this.sockets[username] = undefined;
+                const username = this.usernames.get(socket);
+                this.sockets.delete(username);
+                this.usernames.delete(socket);
             }
         }
         
@@ -39,7 +40,7 @@ class Server{
                 this.router.navigate(request.type, request, socket);
             }
             catch(error){
-                socket.write("Invalid Request");
+                socket.write("Invalid JSON Request");
             }
 
         }
@@ -55,19 +56,19 @@ class Server{
 
 
     registerSocket(client, username){
-        this.sockets[username] = client;
-        this.usernames[client] = username;
+        this.sockets.set(username, client);
+        this.usernames.set(client, username);
     }
 
     
     broadcast(message, username){
-        Object.keys(this.sockets).forEach((key) => {
-            this.sockets[key].write(`message-${username}-${message}`);
+        this.sockets.forEach((socket, user) => {
+            socket.write(`message-${username}-${message}`);
         });
     }
 
     send(message, username){
-        this.sockets[username].write(message);
+        this.sockets.get(username).write(message);
     }
 
 
@@ -75,14 +76,14 @@ class Server{
 
         return true;
 
-        if(this.sockets[username] === client)
+        if(this.sockets.get(username) === client)
             return true;
         else
             return false;
     }
 
     getUserName(socket){
-        return this.usernames[socket]; 
+        return this.usernames.get(socket); 
     }
 };
 
